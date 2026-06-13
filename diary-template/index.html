@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grail Diary</title>
 
+<script>
+// Cover-photo fallback — must be defined BEFORE the <img> parses. With no cover
+// image present (the default scaffold), a file:// load errors during parse,
+// before the main script at the end of the body runs.
+window.__coverFallback = function(img){
+  if(!img.dataset.triedJpg){
+    img.dataset.triedJpg = "1";
+    img.src = "assets/cover.jpg";
+    return;
+  }
+  var board = img.closest ? img.closest(".cover-book") : null;
+  if(board) board.classList.add("no-photo");   // reveal the CSS placeholder
+};
+</script>
+
 <!-- Google Fonts: EB Garamond (body serif) + Cormorant (display) + Caveat (hand/script accents) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1109,16 +1124,16 @@ const prevBtn  = document.getElementById("prev");
 const nextBtn  = document.getElementById("next");
 const coverBook = document.getElementById("coverBook");
 
-// FIX 1 — cover photo fallback: if assets/cover.png 404s, try .jpg; if that
-// also fails, swap to the CSS leather placeholder (same closed-book footprint).
-window.__coverFallback = function(img){
-  if(!img.dataset.triedJpg){
-    img.dataset.triedJpg = "1";
-    img.src = "assets/cover.jpg";
-    return;
-  }
-  coverBook.classList.add("no-photo");   // reveal the CSS placeholder
-};
+// Cover fallback is defined in <head> (it must exist before the <img> parses).
+// Re-check here for the case where the image failed without firing onerror
+// (e.g. cached failure), and label the no-photo placeholder with the title.
+const coverPhotoEl = document.getElementById("coverPhoto");
+if(coverPhotoEl && coverPhotoEl.complete && coverPhotoEl.naturalWidth === 0 &&
+   !coverBook.classList.contains("no-photo")){
+  window.__coverFallback(coverPhotoEl);
+}
+const coverPh = coverBook.querySelector(".cover-placeholder span");
+if(coverPh) coverPh.textContent = DIARY.title;
 
 let SPREADS = [];
 let idx = 0;

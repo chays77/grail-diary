@@ -59,7 +59,7 @@ The system manages **N scoped journals**. A journal is the first-class object.
 A Journal =
   name/topic            ("My Book", "The Cabin Build", "Daybook")
   slug                  (kebab-case folder name)
-  type                  (Project | Memory | Reflective | Gratitude)   ← v1 set, extensible
+  type                  (Project | Memory | Reflective | Gratitude | Reference)   ← v1 set, extensible
   capture criteria      (the per-journal filter, produced by the Phase 0 interview)
   a folder              (its own home — entries + config + candidates + rendered diary)
   a rendered diary      (the flippable HTML book, built by build-diary.js)

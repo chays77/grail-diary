@@ -1,0 +1,10 @@
+# Your journals are yours — by default they are NOT committed.
+# If you want your diary in version control (recommended once it grows),
+# delete or edit the journals/ lines below.
+journals/*
+!journals/_sticky-notes/
+journals/_sticky-notes/*
+!journals/_sticky-notes/README.md
+
+.DS_Store
+Thumbs.db

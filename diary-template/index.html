@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grail Diary</title>
+
+<!-- Google Fonts: EB Garamond (body serif) + Cormorant (display) + Caveat (hand/script accents) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* Aged-paper palette — intentionally NOT the firm system */
+  --paper:#e9dcc0;          /* warm parchment */
+  --paper-deep:#ddcba6;     /* shadowed paper */
+  --paper-edge:#c4ac82;     /* deckled worn edge */
+  --ink:#3a2a18;            /* dark ink-brown body */
+  --ink-soft:#5e4a32;       /* faded ink */
+  --ink-faint:#8a7350;      /* annotation ink */
+  --accent:#7a3b22;         /* rust/sepia red accent */
+  --gild:#9a7b3a;           /* dull gilt */
+  --board:#2a1d10;          /* leather binding board */
+  /* leather palette (cover placeholder fallback only) */
+  --leather:#4a2f1a;        /* rich aged brown */
+  --leather-dark:#2e1c0e;   /* shadowed leather */
+  --leather-deep:#23140a;   /* deepest leather / debossed valley */
+  --leather-hi:#6b4526;     /* worn/raised leather highlight */
+  --foil:#caa765;           /* aged gold foil stamp */
+  --foil-soft:#a98b4f;      /* shadowed foil */
+
+  /* FIX 3 — one fixed leaf height for the whole diary. Both leaves of every
+     opening lock to this so bottoms always align and the footprint never jumps. */
+  --leaf-h: 70vh;
+  --leaf-h-max: 720px;
+}
+
+*{box-sizing:border-box;}
+
+html,body{height:100%;margin:0;}
+
+body{
+  font-family:'EB Garamond',Georgia,serif;
+  color:var(--ink);
+  /* dark leather desk behind the closed book / open spread */
+  background:
+    radial-gradient(ellipse at 50% 32%, #4a3621 0%, #2c1e10 66%, #1a1107 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:24px 14px 56px;
+  overflow-x:hidden;
+}
+
+/* =========================================================================
+   STAGE — holds either the CLOSED COVER (portrait, ~half width, centered)
+   or the OPEN SPREAD. The stage centers whichever is showing on the desk.
+   ========================================================================= */
+.stage{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  /* tall enough to seat the open spread; the closed cover sits centered within */
+  height:min(var(--leaf-h), var(--leaf-h-max));
+  perspective:2600px;
+}
+
+/* =========================================================================
+   FIX 1 — THE CLOSED COVER as a real PHOTO (assets/cover.png|jpg).
+   A closed front board: PORTRAIT, ~half the viewport width, CENTERED on the
+   desk, soft drop shadow beneath. It hinges on its LEFT edge (the spine) and
+   swings open to reveal opening 1. NO title text — the photo is blank leather.
+   If the image is missing, an onerror swap reveals a CSS leather placeholder
+   of the SAME footprint so layout + animation still work.
+   ========================================================================= */
+.cover-book{
+  position:absolute;
+  z-index:30;
+  /* closed-book footprint: ~half viewport width, portrait (taller than wide) */
+  width:min(40vw, 380px);
+  aspect-ratio: 0.72 / 1;          /* portrait journal proportion */
+  max-height:min(86vh, var(--leaf-h-max));
+  transform-origin:left center;     /* hinge = the spine (left edge) */
+  transform:rotateY(0deg);
+  transition:transform .85s cubic-bezier(.45,.05,.25,1), opacity .4s ease;
+  backface-visibility:hidden;
+  border-radius:5px 9px 9px 5px;    /* tighter at the spine */
+  /* soft drop shadow beneath the closed book */
+  box-shadow:
+    0 36px 60px -18px rgba(0,0,0,.72),
+    0 10px 22px -10px rgba(0,0,0,.55);
+  overflow:hidden;
+}
+/* the cover photo itself fills the board — the real tooled-leather photo
+   stands on its own; no decorative spine-shade / edge sheen / keyline is
+   layered over or around it (the cast drop shadow on .cover-book stays). */
+.cover-book .cover-photo{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  border-radius:inherit;
+}
+
+/* CSS PLACEHOLDER (shown only if the photo fails to load) — same footprint,
+   dark leather-toned block with a faint "cover" label so the layout still works. */
+.cover-placeholder{
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  display:none;                      /* hidden until the photo errors */
+  align-items:center;
+  justify-content:center;
+  z-index:1;
+  background:
+    repeating-linear-gradient(48deg, rgba(0,0,0,.05) 0 2px, transparent 2px 5px),
+    radial-gradient(ellipse 60% 55% at 60% 40%, rgba(107,69,38,.5) 0%, transparent 65%),
+    radial-gradient(ellipse 120% 120% at 50% 50%, var(--leather) 0%, var(--leather-dark) 72%, var(--leather-deep) 100%);
+}
+.cover-book.no-photo .cover-photo{ display:none; }
+.cover-book.no-photo .cover-placeholder{ display:flex; }
+.cover-placeholder span{
+  font-family:'Caveat',cursive;
+  font-size:1.2rem;
+  letter-spacing:1px;
+  color:var(--foil-soft);
+  opacity:.55;
+}
+
+/* a soft "open" prompt beneath the closed cover */
+.cover-openhint{
+  position:absolute;
+  left:50%;
+  bottom:-30px;
+  transform:translateX(-50%);
+  font-family:'Caveat',cursive;
+  font-size:1.05rem;
+  color:#cdb98e;
+  opacity:.75;
+  z-index:31;
+  pointer-events:none;
+  white-space:nowrap;
+  animation:breathe 2.8s ease-in-out infinite;
+}
+@keyframes breathe{ 0%,100%{opacity:.4;} 50%{opacity:.85;} }
+
+/* when the diary is open, the cover swings away to the left and hides */
+.stage.is-open .cover-book{
+  transform:rotateY(-172deg);
+  opacity:0;
+  pointer-events:none;
+}
+.stage.is-open .cover-openhint{ opacity:0; }
+/* keep the closed cover interactive only while closed */
+.cover-book{ cursor:pointer; }
+.stage:not(.is-open) .book{ visibility:hidden; }   /* hide spread behind closed cover */
+
+/* =========================================================================
+   THE OPEN BOOK — two-leaf spread with a center gutter/crease
+   ========================================================================= */
+.book{
+  position:relative;
+  /* FIX 3 — the spread is sized by the FIXED leaf height; width follows.
+     Two leaves side by side, each leaf taller than wide → spread ~ 1.46:1. */
+  height:min(var(--leaf-h), var(--leaf-h-max));
+  width:auto;
+  aspect-ratio:1.46/1;
+  max-width:96vw;
+  /* binding board peeking around the edges */
+  background:linear-gradient(180deg,#3a2814,#241809);
+  border-radius:8px;
+  padding:10px;
+  box-shadow:0 32px 64px -14px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.4);
+  opacity:0;
+  transition:opacity .4s ease .25s;   /* fade in just after the cover swings */
+}
+.stage.is-open .book{ opacity:1; }
+
+.spread{
+  position:relative;
+  display:flex;
+  width:100%;
+  height:100%;
+  border-radius:4px;
+  overflow:hidden;
+}
+
+/* a single leaf (left or right page) — WEATHERED PAPER (kept from v3).
+   FIX 3: both leaves are forced to the SAME fixed height; bottoms align. */
+.leaf{
+  position:relative;
+  flex:1 1 50%;
+  min-width:0;
+  height:100%;                /* FIX 3 — equal height, locked to the spread */
+  background:
+    /* uneven sun/age discoloration — large soft warm blooms */
+    radial-gradient(ellipse 60% 50% at 22% 18%, rgba(150,116,58,.16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 80% 78%, rgba(138,98,42,.15) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 40% at 58% 50%, rgba(120,86,38,.06) 0%, transparent 70%),
+    /* soft irregular tea-stains */
+    radial-gradient(circle at 18% 22%, rgba(120,80,34,.14) 0%, transparent 16%),
+    radial-gradient(circle at 84% 30%, rgba(110,74,30,.12) 0%, transparent 14%),
+    radial-gradient(circle at 70% 84%, rgba(118,80,34,.13) 0%, transparent 18%),
+    radial-gradient(circle at 38% 70%, rgba(108,72,30,.10) 0%, transparent 13%),
+    /* base sheet, very slightly warmer toward the outer corner */
+    linear-gradient(125deg, var(--paper-deep) 0%, var(--paper) 32%, var(--paper) 72%, var(--paper-deep) 100%);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* paper grain / fiber + FOXING spots + edge vignette.
+   Foxing = the little brown age-freckles you see on old book pages. */
+.leaf::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background-image:
+    /* fiber weave */
+    repeating-linear-gradient(0deg, rgba(90,65,30,.03) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(90,65,30,.024) 0 1px, transparent 1px 4px),
+    /* scattered foxing freckles — tiny hard-ish brown dots */
+    radial-gradient(circle at 12% 34%, rgba(96,58,22,.5) 0 .7px, transparent 1.6px),
+    radial-gradient(circle at 27% 12%, rgba(110,66,26,.4) 0 .6px, transparent 1.5px),
+    radial-gradient(circle at 44% 28%, rgba(96,58,22,.45) 0 .8px, transparent 1.8px),
+    radial-gradient(circle at 63% 18%, rgba(110,70,30,.38) 0 .6px, transparent 1.4px),
+    radial-gradient(circle at 79% 44%, rgba(96,58,22,.46) 0 .7px, transparent 1.7px),
+    radial-gradient(circle at 88% 66%, rgba(104,64,26,.42) 0 .7px, transparent 1.6px),
+    radial-gradient(circle at 70% 80%, rgba(96,58,22,.4) 0 .8px, transparent 1.8px),
+    radial-gradient(circle at 52% 90%, rgba(110,70,30,.36) 0 .6px, transparent 1.4px),
+    radial-gradient(circle at 33% 74%, rgba(96,58,22,.44) 0 .7px, transparent 1.7px),
+    radial-gradient(circle at 17% 58%, rgba(104,64,26,.4) 0 .7px, transparent 1.6px),
+    radial-gradient(circle at 9% 84%, rgba(96,58,22,.38) 0 .6px, transparent 1.5px),
+    radial-gradient(circle at 58% 56%, rgba(104,64,26,.3) 0 .6px, transparent 1.4px),
+    /* broad soft grime in two corners */
+    radial-gradient(circle at 30% 82%, rgba(70,45,15,.10), transparent 40%),
+    radial-gradient(circle at 76% 24%, rgba(70,45,15,.09), transparent 38%);
+  mix-blend-mode:multiply;
+  opacity:.85;
+}
+
+/* EDGE DARKENING + VIGNETTE — worn, slightly grimy page edges all around. */
+.leaf .leaf-inner::after{
+  content:"";
+  position:absolute;
+  inset:-40px;            /* bleed past padding so the dark hugs the true page edge */
+  pointer-events:none;
+  z-index:0;
+  border-radius:3px;
+  background:
+    radial-gradient(ellipse 96% 96% at 50% 50%, transparent 60%, rgba(70,46,18,.16) 86%, rgba(54,34,12,.30) 100%);
+  mix-blend-mode:multiply;
+}
+
+/* LEFT leaf: gutter shadow on its right (spine) edge + worn outer edge */
+.leaf.left{
+  border-radius:3px 0 0 3px;
+  box-shadow:
+    inset -26px 0 40px -20px rgba(60,40,15,.55),   /* gutter (spine) */
+    inset 14px 0 26px -14px rgba(74,48,18,.42),     /* worn outer (deckled) edge */
+    inset 0 16px 26px -16px rgba(74,48,18,.30),     /* top edge wear */
+    inset 0 -16px 26px -16px rgba(74,48,18,.34);    /* bottom edge wear */
+}
+.leaf.left::after{
+  content:"";
+  position:absolute;top:0;bottom:0;left:0;width:26px;
+  pointer-events:none;z-index:1;
+  background:linear-gradient(90deg, rgba(120,90,45,.42), transparent);
+  mix-blend-mode:multiply;opacity:.75;
+}
+/* RIGHT leaf: gutter shadow on its left (spine) edge + worn outer edge */
+.leaf.right{
+  border-radius:0 3px 3px 0;
+  box-shadow:
+    inset 26px 0 40px -20px rgba(60,40,15,.55),     /* gutter (spine) */
+    inset -14px 0 26px -14px rgba(74,48,18,.42),     /* worn outer (deckled) edge */
+    inset 0 16px 26px -16px rgba(74,48,18,.30),      /* top edge wear */
+    inset 0 -16px 26px -16px rgba(74,48,18,.34);     /* bottom edge wear */
+}
+.leaf.right::after{
+  content:"";
+  position:absolute;top:0;bottom:0;right:0;width:26px;
+  pointer-events:none;z-index:1;
+  background:linear-gradient(270deg, rgba(120,90,45,.42), transparent);
+  mix-blend-mode:multiply;opacity:.75;
+}
+
+/* the visible CENTER CREASE — a soft dark valley down the middle of the open book */
+.spread::after{
+  content:"";
+  position:absolute;
+  top:0;bottom:0;left:50%;
+  width:64px;
+  transform:translateX(-50%);
+  pointer-events:none;
+  z-index:5;
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      rgba(50,33,12,.05) 22%,
+      rgba(40,26,9,.28) 47%,
+      rgba(30,19,6,.42) 50%,
+      rgba(40,26,9,.28) 53%,
+      rgba(50,33,12,.05) 78%,
+      transparent 100%);
+  mix-blend-mode:multiply;
+}
+/* a faint highlight right on the fold so the crease reads as a 3D valley */
+.spread .fold-highlight{
+  content:"";
+  position:absolute;
+  top:0;bottom:0;left:50%;
+  width:2px;
+  transform:translateX(-50%);
+  pointer-events:none;
+  z-index:6;
+  background:linear-gradient(180deg, rgba(255,244,214,.18), rgba(255,244,214,.04));
+}
+
+/* turning animation — the whole spread flips (inner pages only) */
+.book.turning-fwd .spread{ animation:flipFwd .6s cubic-bezier(.55,.05,.3,1); }
+.book.turning-back .spread{ animation:flipBack .6s cubic-bezier(.55,.05,.3,1); }
+@keyframes flipFwd{
+  0%{ transform:none; opacity:1; }
+  46%{ transform:rotateY(-7deg) scale(.985); opacity:.55; }
+  47%{ transform:rotateY(7deg) scale(.985); opacity:.55; }
+  100%{ transform:none; opacity:1; }
+}
+@keyframes flipBack{
+  0%{ transform:none; opacity:1; }
+  46%{ transform:rotateY(7deg) scale(.985); opacity:.55; }
+  47%{ transform:rotateY(-7deg) scale(.985); opacity:.55; }
+  100%{ transform:none; opacity:1; }
+}
+
+/* =========================================================================
+   LEAF CONTENT — commonplace layout, max 2 entries per page (FIX 4)
+   ========================================================================= */
+.leaf-inner{
+  position:relative;
+  z-index:2;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:20px;                   /* FIX 4 — generous whitespace between the (max 2) scraps */
+  height:100%;
+  overflow:hidden;
+}
+/* outer/inner asymmetric padding: more room toward the outer edge, snug to the gutter */
+.leaf.left  .leaf-inner{ padding:46px 32px 38px 48px; }
+.leaf.right .leaf-inner{ padding:46px 48px 38px 32px; }
+
+/* FRONT-MATTER leaves (title + rules) — centered, airy, no entry chrome */
+.leaf-inner.front-matter{ justify-content:center; gap:0; }
+
+/* --- Title page (opening 1, LEFT) --- */
+.title-page{ text-align:center; padding:0 6%; }
+.title-eyebrow{
+  font-family:'Caveat',cursive;
+  font-size:clamp(1.1rem,2.2vw,1.6rem);
+  color:var(--accent);
+  letter-spacing:.5px;
+  margin:0 0 clamp(20px,4vh,40px);
+  transform:rotate(-1deg);
+}
+.title-main{
+  font-family:'Cormorant',serif;
+  font-weight:700;
+  font-size:clamp(2rem,4.6vw,3.4rem);
+  line-height:1.04;
+  letter-spacing:.5px;
+  color:var(--ink);
+  margin:0;
+}
+.title-rule{
+  width:clamp(70px,12vw,120px);
+  height:2px;
+  margin:clamp(22px,4vh,38px) auto;
+  background:linear-gradient(90deg,transparent,var(--gild),transparent);
+}
+.title-author{
+  font-family:'Cormorant',serif;
+  font-weight:500;
+  font-style:italic;
+  font-size:clamp(1.1rem,2vw,1.5rem);
+  color:var(--ink-soft);
+  margin:0;
+  letter-spacing:.5px;
+}
+.title-anchor{
+  margin:clamp(26px,5vh,46px) auto 0;
+  font-family:'EB Garamond',serif;
+  font-style:italic;
+  font-size:clamp(.82rem,1.2vw,1rem);
+  line-height:1.5;
+  max-width:34ch;
+  color:var(--ink-faint);
+}
+
+/* --- Rules page (opening 1, RIGHT) — VERBATIM capture criteria from config --- */
+.rules-page{ padding:0 2%; }
+.rules-heading{
+  font-family:'Cormorant',serif;
+  font-weight:600;
+  font-size:clamp(1.3rem,2.4vw,1.85rem);
+  color:var(--ink);
+  margin:0 0 .15em;
+  text-align:center;
+}
+.rules-sub{
+  font-family:'Caveat',cursive;
+  font-size:clamp(.9rem,1.5vw,1.1rem);
+  color:var(--ink-faint);
+  text-align:center;
+  margin:0 0 clamp(16px,3vh,26px);
+}
+.rule-item{ margin:0 0 clamp(13px,2.4vh,20px); }
+.rule-item .rule-name{
+  font-family:'Cormorant',serif;
+  font-weight:600;
+  font-style:italic;
+  font-size:clamp(1rem,1.5vw,1.22rem);
+  color:var(--accent);
+  display:block;
+  margin-bottom:.12em;
+}
+.rule-item .rule-desc{
+  font-family:'EB Garamond',serif;
+  font-size:clamp(.84rem,1.1vw,1rem);
+  line-height:1.46;
+  color:var(--ink);
+  margin:0;
+}
+.rules-lens, .rules-bar{
+  margin-top:clamp(14px,2.6vh,22px);
+  padding-top:clamp(12px,2vh,18px);
+  border-top:1px solid rgba(120,90,45,.22);
+}
+.rules-lens .rule-name, .rules-bar .rule-name{
+  font-family:'Caveat',cursive;
+  font-style:normal;
+  font-size:clamp(1rem,1.6vw,1.25rem);
+  color:var(--ink-soft);
+  display:block;
+  margin-bottom:.18em;
+}
+.rules-lens .rule-desc, .rules-bar .rule-desc{
+  font-family:'EB Garamond',serif;
+  font-style:italic;
+  font-size:clamp(.84rem,1.1vw,1rem);
+  line-height:1.48;
+  color:var(--ink-soft);
+  margin:0;
+}
+
+/* an individual captured entry — a scrap collected on the page */
+.entry{
+  position:relative;
+  padding:6px 4px 16px;
+  border-bottom:1px solid rgba(120,90,45,.18);
+}
+.entry:last-child{ border-bottom:none; }
+.entry.flex-grow{ flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; }
+
+/* FIX 5 — when a leaf carries a sketch, the LAST entry clears the bottom-right
+   corner so no entry text ever flows under the margin stamp. A reserved float
+   (zero-ish width, real height) + shape-outside pushes text up and left around
+   the corner zone. Belt-and-suspenders: .has-sketch also pads the leaf bottom. */
+.leaf-inner.has-sketch{ padding-bottom:152px; }
+.leaf.left  .leaf-inner.has-sketch{ padding-bottom:152px; }
+.leaf.right .leaf-inner.has-sketch{ padding-bottom:152px; }
+.entry .corner-reserve{
+  float:right;
+  width:150px;
+  height:140px;
+  margin:6px 0 0 14px;
+  shape-outside:polygon(0 100%, 100% 0, 100% 100%);
+  pointer-events:none;
+}
+
+/* the captured line / claim body */
+.entry-body p{
+  margin:0 0 .5em;
+  font-size:clamp(.9rem,1.2vw,1.08rem);
+  line-height:1.52;
+  color:var(--ink);
+}
+.entry-body p:last-child{ margin-bottom:0; }
+
+/* the lead paragraph (the claim/quote) gets display weight */
+.entry-body p:first-child{
+  font-family:'Cormorant',serif;
+  font-weight:500;
+  font-size:clamp(1.04rem,1.55vw,1.4rem);
+  line-height:1.34;
+}
+
+/* SHORT entries (a single quote/claim) — float a touch larger + italic, gilt rule above */
+.entry.is-short .entry-body p:first-child{
+  font-style:italic;
+  font-size:clamp(1.12rem,1.9vw,1.58rem);
+  line-height:1.36;
+}
+.entry.is-short .entry-body::before{
+  content:"";
+  display:block;
+  width:42px;height:2px;
+  background:linear-gradient(90deg,var(--gild),transparent);
+  margin-bottom:.55em;
+  opacity:.85;
+}
+
+/* LONG entries pack tighter so they don't overflow the leaf */
+.entry.is-long .entry-body p{ font-size:clamp(.82rem,1.06vw,.98rem); line-height:1.48; }
+.entry.is-long .entry-body p:first-child{ font-size:clamp(.95rem,1.32vw,1.16rem); line-height:1.32; }
+
+/* corner date — small archival hand */
+.corner-date{
+  position:absolute;
+  top:2px;right:6px;
+  font-family:'Caveat',cursive;
+  font-size:.92rem;
+  color:var(--ink-faint);
+  transform:rotate(-2.5deg);
+  letter-spacing:.2px;
+  pointer-events:none;
+}
+
+/* criterion shorthand — faint librarian's hand, top-left of the scrap */
+.crit-mark{
+  font-family:'Caveat',cursive;
+  font-size:.82rem;
+  color:var(--ink-faint);
+  opacity:.66;
+  transform:rotate(-1deg);
+  margin-bottom:5px;
+  display:inline-block;
+}
+
+/* provenance footnote — faint "from …" */
+.footnote{
+  margin-top:9px;
+  font-size:.66rem;
+  color:var(--ink-faint);
+  font-style:italic;
+  letter-spacing:.2px;
+  opacity:.92;
+  word-break:break-word;
+}
+.footnote .label{
+  font-style:normal;
+  font-family:'Caveat',cursive;
+  font-size:.82rem;
+  margin-right:5px;
+  color:var(--ink-soft);
+}
+
+/* =========================================================================
+   PIN AFFORDANCE — a drawn wax-seal pushpin, appears on hover
+   ========================================================================= */
+.pin{
+  position:absolute;
+  top:0;left:-6px;
+  width:26px;height:26px;
+  border:none;background:transparent;
+  cursor:pointer;
+  opacity:0;
+  transform:translateY(-2px) rotate(-8deg) scale(.85);
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:4;
+  padding:0;
+  line-height:0;
+}
+.entry:hover .pin{ opacity:.55; transform:translateY(-2px) rotate(-8deg) scale(1); }
+.pin:hover{ opacity:1 !important; transform:translateY(-2px) rotate(-2deg) scale(1.12) !important; }
+.pin svg{ width:100%; height:100%; display:block; filter:drop-shadow(0 1px 1px rgba(40,25,8,.35)); }
+.entry.pinned .pin{ opacity:1; transform:translateY(-2px) rotate(0deg) scale(1); }
+.pinned-tell{
+  position:absolute;
+  top:1px;left:14px;
+  font-family:'Caveat',cursive;
+  font-size:.72rem;
+  color:var(--accent);
+  opacity:.7;
+  transform:rotate(-3deg);
+  pointer-events:none;
+  display:none;
+}
+.entry.pinned .pinned-tell{ display:block; }
+
+/* =========================================================================
+   THEME SKETCHES — TRANSPARENT sepia line art (kept from v3).
+   v5.1: placed ONLY in the BOTTOM-RIGHT corner of the RIGHT leaf — never the
+   left leaf, never center, never the gutter/spine, never over text. RGBA PNGs
+   (white knocked to alpha), trimmed tight to the ink — the page shows through.
+   ========================================================================= */
+.margin-sketch{
+  position:absolute;
+  z-index:1;
+  pointer-events:none;
+  opacity:.82;
+}
+.margin-sketch img{
+  width:100%;height:100%;
+  display:block;
+  object-fit:contain;
+  filter:saturate(.92) drop-shadow(0 1px 0 rgba(120,90,45,.12));
+}
+/* SINGLE placement: bottom-RIGHT corner of the RIGHT leaf ONLY (v5.1).
+   The left leaf never carries a sketch — the JS renders it only on the right leaf. */
+.margin-sketch.corner{
+  bottom:16px;
+  right:18px;
+  width:138px;
+  height:132px;
+  transform:rotate(2deg);
+}
+.leaf.right .margin-sketch.corner{ right:18px; }   /* right leaf, bottom-right corner */
+
+/* =========================================================================
+   CONTROLS / CHROME
+   ========================================================================= */
+.toolbar{
+  margin-top:30px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  color:#d9c6a0;
+  font-family:'EB Garamond',serif;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+button.nav{
+  background:linear-gradient(180deg,#5a4327,#3a2a16);
+  color:#e9dcc0;
+  border:1px solid #2a1d10;
+  border-radius:6px;
+  padding:9px 16px;
+  font-family:'Cormorant',serif;
+  font-size:1.05rem;
+  letter-spacing:.4px;
+  cursor:pointer;
+  box-shadow:0 2px 6px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,230,180,.12);
+  transition:transform .12s ease, filter .12s ease;
+}
+button.nav:hover{ filter:brightness(1.12); }
+button.nav:active{ transform:translateY(1px); }
+button.nav:disabled{ opacity:.4; cursor:default; }
+
+.counter{
+  min-width:110px;
+  text-align:center;
+  font-family:'Caveat',cursive;
+  font-size:1.15rem;
+  color:#cdb98e;
+}
+
+.reshuffle{
+  background:transparent;
+  border:1px dashed #8a7350;
+  color:#cdb98e;
+  border-radius:20px;
+  padding:6px 14px;
+  font-family:'Caveat',cursive;
+  font-size:1rem;
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.reshuffle:hover{ border-style:solid; color:#e9dcc0; }
+
+.hint{
+  margin-top:10px;
+  font-size:.8rem;
+  color:#9a875f;
+  font-style:italic;
+  text-align:center;
+  max-width:60ch;
+  line-height:1.5;
+}
+
+/* =========================================================================
+   NARROW SCREENS — fall back to ONE leaf at a time (no spread, no crease)
+   ========================================================================= */
+@media (max-width:820px){
+  :root{ --leaf-h: 78vh; }
+  .book{ aspect-ratio:1/1.3; max-width:96vw; }
+  .cover-book{ width:min(68vw, 320px); }
+  .spread::after, .spread .fold-highlight{ display:none; }
+  .spread[data-mobile-show="left"] .leaf.right{ display:none; }
+  .spread[data-mobile-show="right"] .leaf.left{ display:none; }
+  .spread[data-mobile-show="left"] .leaf.left,
+  .spread[data-mobile-show="right"] .leaf.right{ flex:1 1 100%; border-radius:3px; box-shadow:none; }
+  .spread[data-mobile-show] .leaf::after{ display:none; }
+  .leaf.left .leaf-inner, .leaf.right .leaf-inner{ padding:36px 26px 32px; }
+  .leaf.left .leaf-inner.has-sketch, .leaf.right .leaf-inner.has-sketch{ padding-bottom:120px; }
+  .entry-body p:first-child{ font-size:clamp(1.05rem,4.4vw,1.35rem); }
+  .entry-body p{ font-size:clamp(.92rem,3.6vw,1.05rem); }
+  .margin-sketch.corner{ width:104px;height:100px; right:14px; bottom:14px; }
+  .entry .corner-reserve{ width:112px; height:108px; }
+  .title-main{ font-size:clamp(1.8rem,8vw,2.6rem); }
+}
+
+/* respect reduced-motion: open instantly, no spread flip */
+@media (prefers-reduced-motion:reduce){
+  .cover-book{ transition:opacity .2s ease; }
+  .book{ transition:opacity .2s ease; }
+  .book.turning-fwd .spread, .book.turning-back .spread{ animation:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <!-- THE OPEN BOOK — revealed when the cover swings away -->
+  <div class="book" id="book" aria-live="polite">
+    <div class="spread" id="spread">
+      <div class="leaf left"><div class="leaf-inner" id="leafL"></div></div>
+      <span class="fold-highlight" aria-hidden="true"></span>
+      <div class="leaf right"><div class="leaf-inner" id="leafR"></div></div>
+    </div>
+  </div>
+
+  <!-- FIX 1 — CLOSED COVER: a real photo (assets/cover.png|jpg), portrait,
+       ~half width, centered, swings open on the spine. Blank leather, no title. -->
+  <div class="cover-book" id="coverBook" role="button" tabindex="0"
+       aria-label="A Grail Diary. Press to open.">
+    <img class="cover-photo" id="coverPhoto" src="assets/cover.png" alt=""
+         onerror="window.__coverFallback && window.__coverFallback(this)">
+    <div class="cover-placeholder" aria-hidden="true"><span>cover</span></div>
+  </div>
+  <div class="cover-openhint" id="coverHint">— open —</div>
+
+</div>
+
+<div class="toolbar">
+  <button class="nav" id="prev" aria-label="Previous opening">&larr; Prev</button>
+  <span class="counter" id="counter"></span>
+  <button class="nav" id="next" aria-label="Next opening">Next &rarr;</button>
+  <button class="reshuffle" id="reshuffle" title="Re-deal the unpinned scraps in a fresh order">&#8635; reshuffle</button>
+</div>
+<div class="hint">Click the closed cover to open the diary. First opening: the title page and the rules for capture. After that — click a leaf edge, use &larr; &rarr; arrows, or swipe to turn the spread. Hover a scrap and press its wax seal to <em>pin</em> it — pinned scraps hold their spot; the rest re-deal each time the diary opens.</div>
+
+<script>
+/* =========================================================================
+   GRAIL DIARY — flippable journal renderer (template)
+
+   GOVERNING CONSTRAINT: "the system surfaces, the human connects."
+   - Presentation only. Reads embedded entry data. NEVER mutates source .md files.
+   - Shuffle-on-open: unpinned scraps are re-dealt every load + on reshuffle.
+   - The owner can PIN a scrap to a fixed spot. Pins persist in localStorage,
+     keyed by journal slug. Pins are presentation-state ONLY.
+   - No clustering, no theme grouping, no sort-by-meaning, no "related",
+     no see-also, no search, no summaries. The reader connects.
+   - One journal only. _candidates.md is never read or displayed.
+
+   Layout rules:
+   1. Cover is a real PHOTO (assets/cover.png|jpg), a CLOSED portrait front board
+      ~half the viewport width, centered, swinging open on the spine. Blank
+      leather — no title text. CSS leather placeholder if the photo is missing.
+   2. Opening 1 is FIXED FRONT MATTER: LEFT = title page, RIGHT = the verbatim
+      capture rules from journal.config.md. It is NOT part of the shuffle pool.
+      Entries begin on opening 2.
+   3. Both leaves of every opening lock to ONE fixed height (--leaf-h); bottoms align.
+   4. Max 2 entries per leaf (MAX_SLOTS = 2) with generous whitespace.
+   5. The single per-spread theme sketch renders on the RIGHT leaf ONLY,
+      bottom-right corner. The LEFT leaf never carries a sketch.
+
+   The blocks below marked "injected by build-diary.js" are rewritten by the
+   build script from your journal's entries/ and journal.config.md. Do not
+   hand-edit them in a built diary — edit the source files and rebuild.
+   ========================================================================= */
+
+// --- Journal slug (injected by build-diary.js) --------------------------------
+const JOURNAL_SLUG = "my-journal";
+const PIN_KEY = "grail-diary-pins::" + JOURNAL_SLUG;
+
+// --- Embedded entry data (injected by build-diary.js from entries/*.md) ------
+const ENTRIES = [];
+
+// --- Diary meta (injected by build-diary.js from journal.config.md) ----------
+const DIARY = {
+  kicker: "A Grail Diary",
+  title: "My Journal",
+  author: "",
+  anchor: ""
+};
+
+/* --- FRONT MATTER: capture criteria, VERBATIM from journal.config.md ---------
+   CRITICAL: these strings are the owner's words, transcribed exactly from the
+   config's descriptions. The diary DISPLAYS the stated filter; it does not
+   author, summarize, re-word, or interpret it. Format only.
+   lens is optional (null to omit) — a cross-cutting priority that sits above
+   the criteria, if the journal's config defines one.                       */
+// --- Capture rules (injected by build-diary.js from journal.config.md) -------
+const RULES = {
+  heading: "Rules for Capture",
+  sub: "What this journal captures, in the owner's words.",
+  criteria: [],
+  lens: null,
+  bar: null
+};
+
+// --- Theme sketches (optional, hand-curated — never one-per-entry) ------------
+// Bring your own: drop pen-and-ink sketch images in diary/assets/ and map them
+// here, keyed by LOWERCASE criterion label. Leave empty to run sketch-free.
+// Example:
+//   "lines that moved someone": {src:"assets/sketch-lines.png", cls:"s-lines"}
+const SKETCH = {};
+// Optional: let one sketch theme fire on specific null-criterion entries
+// (entries captured directly, with no matched criterion). LENS_KEY names the
+// SKETCH key to use; LENS_SLUGS lists the entry slugs that carry it.
+const LENS_KEY = null;
+const LENS_SLUGS = new Set([]);
+
+function critKey(c){
+  if(!c || c === "null") return null;
+  return String(c).trim().toLowerCase();
+}
+function sketchTheme(entry){
+  const k = critKey(entry.matched_criterion);
+  if(k && SKETCH[k]) return k;
+  if(!k && LENS_KEY && SKETCH[LENS_KEY] && LENS_SLUGS.has(entry.slug)) return LENS_KEY;
+  return null;
+}
+
+// --- Fisher-Yates shuffle on a COPY (never mutates ENTRIES) -------------------
+function shuffled(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function fmtDate(d){
+  const m = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const p = String(d).split("-");
+  if(p.length!==3) return d;
+  return m[parseInt(p[1],10)-1] + " " + parseInt(p[2],10) + ", " + p[0];
+}
+function originLabel(o){
+  if(!o) return "";
+  if(o === "live-session") return "live session";
+  return o;
+}
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// --- Length buckets drive how many scraps share a leaf -----------------------
+function weightOf(e){
+  const n = (e.body||"").length;
+  if(n < 170) return 1;     // short — a single quote/claim
+  if(n < 380) return 2;     // medium
+  return 3;                 // long
+}
+function sizeClass(e){
+  const n = (e.body||"").length;
+  if(n < 170) return "is-short";
+  if(n >= 380) return "is-long";
+  return "is-medium";
+}
+
+/* =========================================================================
+   PINS — presentation-state only, persisted in localStorage. NEVER .md.
+   A pin maps  slug -> {spread, leaf, slot}.  (spread here is ENTRY-spread
+   index, 0-based, i.e. excluding cover AND front matter.)
+   ========================================================================= */
+function loadPins(){
+  try{
+    const raw = localStorage.getItem(PIN_KEY);
+    if(!raw) return {};
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === "object") ? obj : {};
+  }catch(e){ return {}; }
+}
+function savePins(pins){
+  try{ localStorage.setItem(PIN_KEY, JSON.stringify(pins)); }catch(e){}
+}
+let PINS = loadPins();
+
+/* =========================================================================
+   PAGINATION — deal scraps into leaves, honoring pins.
+   FIX 4: MAX_SLOTS = 2 — never more than two scraps on one leaf.
+   LEAF_BUDGET kept as a soft weight cap so a long+long pair won't overflow.
+   ========================================================================= */
+const LEAF_BUDGET = 5;     // soft weight cap (e.g. long(3)+medium(2)=5 ok; long+long=6 splits)
+const MAX_SLOTS   = 2;     // FIX 4 — hard max of TWO scraps per leaf
+
+function buildLayout(){
+  const bySlug = {};
+  ENTRIES.forEach(e => bySlug[e.slug] = e);
+
+  const pinnedSlugs = Object.keys(PINS).filter(s => bySlug[s]);
+  const pinnedSet = new Set(pinnedSlugs);
+
+  // unpinned pool, shuffled fresh (the anti-atrophy mechanic)
+  const pool = shuffled(ENTRIES.filter(e => !pinnedSet.has(e.slug)));
+
+  const leaves = [];
+  function ensureLeaf(i){
+    while(leaves.length <= i) leaves.push({entries:[], used:0});
+    return leaves[i];
+  }
+  function leafIndex(spread, leaf){ return spread*2 + (leaf === "R" ? 1 : 0); }
+
+  const pinnedPlaced = pinnedSlugs.map(s => ({slug:s, ...PINS[s]}))
+    .sort((a,b)=> (a.spread-b.spread) || (a.leaf===b.leaf?0:(a.leaf==="L"?-1:1)) || (a.slot-b.slot));
+
+  pinnedPlaced.forEach(p => {
+    const e = bySlug[p.slug];
+    let li = leafIndex(p.spread||0, p.leaf||"L");
+    let leafObj = ensureLeaf(li);
+    if(leafObj.entries.length >= MAX_SLOTS || leafObj.used + weightOf(e) > LEAF_BUDGET){
+      const sib = leafIndex(p.spread||0, (p.leaf==="L")?"R":"L");
+      const sibObj = ensureLeaf(sib);
+      if(sibObj.entries.length < MAX_SLOTS && sibObj.used + weightOf(e) <= LEAF_BUDGET){
+        leafObj = sibObj; li = sib;
+      }else{
+        li = 0; leafObj = ensureLeaf(0);
+        if(leafObj.entries.length >= MAX_SLOTS || leafObj.used + weightOf(e) > LEAF_BUDGET){
+          li = 1; leafObj = ensureLeaf(1);
+        }
+      }
+    }
+    const slot = Math.min(p.slot ?? leafObj.entries.length, leafObj.entries.length);
+    leafObj.entries.splice(slot, 0, {entry:e, pinned:true});
+    leafObj.used += weightOf(e);
+  });
+
+  let cursor = 0;
+  pool.forEach(e => {
+    const w = weightOf(e);
+    let placed = false;
+    for(let i = cursor; i < leaves.length + 1; i++){
+      const leafObj = ensureLeaf(i);
+      // FIX 4: respect the hard 2-slot cap first; budget is the soft secondary guard
+      if(leafObj.entries.length < MAX_SLOTS && leafObj.used + w <= LEAF_BUDGET){
+        leafObj.entries.push({entry:e, pinned:false});
+        leafObj.used += w;
+        placed = true;
+        if(leafObj.entries.length >= MAX_SLOTS || leafObj.used >= LEAF_BUDGET - 1){
+          if(i === cursor) cursor = i + 1;
+        }
+        break;
+      }
+    }
+    if(!placed){
+      const leafObj = ensureLeaf(leaves.length);
+      leafObj.entries.push({entry:e, pinned:false});
+      leafObj.used += w;
+    }
+  });
+
+  // ENTRY spreads: group leaves into spreads of two (L,R).
+  const entrySpreads = [];
+  for(let i = 0; i < leaves.length; i += 2){
+    entrySpreads.push({
+      type:"entries",
+      L: leaves[i]   ? leaves[i].entries   : [],
+      R: leaves[i+1] ? leaves[i+1].entries : []
+    });
+  }
+
+  // FIX 2: prepend the COVER (idx 0) and the FIXED FRONT-MATTER opening (idx 1).
+  // Front matter is NOT part of the shuffle pool — it is always opening 1.
+  const spreads = [
+    {type:"cover"},
+    {type:"front"},        // title page (L) + rules page (R)
+    ...entrySpreads        // entries begin at opening 2
+  ];
+  return spreads;
+}
+
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
+function entryHTML(item, reserveCorner){
+  const e = item.entry;
+  const cls = sizeClass(e);
+  const body = e.body || "";
+  const paras = body.split(/\n\s*\n/).map(p => `<p>${esc(p).replace(/\n/g,"<br>")}</p>`).join("");
+  const critRaw = critKey(e.matched_criterion);
+  const critMark = critRaw ? `<div class="crit-mark">${esc(e.matched_criterion)}</div>` : "";
+  const origin = originLabel(e.origin);
+  const footnote = origin ? `<div class="footnote"><span class="label">from</span>${esc(origin)}</div>` : "";
+  const pinnedCls = item.pinned ? " pinned" : "";
+  // FIX 5: the last entry on a sketched leaf floats a corner-reserve so its text
+  // wraps clear of the bottom-right stamp.
+  const reserve = reserveCorner ? `<span class="corner-reserve" aria-hidden="true"></span>` : "";
+  const seal = `
+    <button class="pin" data-slug="${esc(e.slug)}" title="${item.pinned ? "Unpin this scrap" : "Pin this scrap to hold its spot"}" aria-label="${item.pinned ? "Unpin" : "Pin"}">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" fill="#7a3b22" stroke="#5a2a16" stroke-width="1"/>
+        <path d="M12 6.6 l1.5 3.3 3.6.4 -2.7 2.4 .8 3.5 -3.2 -1.8 -3.2 1.8 .8 -3.5 -2.7 -2.4 3.6 -.4 z"
+              fill="#e9dcc0" opacity=".82"/>
+      </svg>
+    </button>`;
+  return `
+    <div class="entry ${cls}${pinnedCls}">
+      ${seal}
+      <span class="pinned-tell">pinned</span>
+      <div class="corner-date">${esc(fmtDate(e.date))}</div>
+      ${critMark}
+      <div class="entry-body">${reserve}${paras}</div>
+      ${footnote}
+    </div>`;
+}
+
+// FIX 2 — front-matter HTML. Title page (LEFT) and rules page (RIGHT), verbatim.
+function titlePageHTML(){
+  const author = DIARY.author ? `<p class="title-author">${esc(DIARY.author)}</p>` : "";
+  const anchor = DIARY.anchor ? `<p class="title-anchor">${esc(DIARY.anchor)}</p>` : "";
+  return `
+    <div class="title-page">
+      <p class="title-eyebrow">${esc(DIARY.kicker)}</p>
+      <h1 class="title-main">${esc(DIARY.title)}</h1>
+      <div class="title-rule"></div>
+      ${author}
+      ${anchor}
+    </div>`;
+}
+function rulesPageHTML(){
+  const crit = RULES.criteria.map(c => `
+    <div class="rule-item">
+      <span class="rule-name">${esc(c.name)}</span>
+      <p class="rule-desc">${esc(c.desc)}</p>
+    </div>`).join("");
+  const lens = RULES.lens ? `
+      <div class="rules-lens">
+        <span class="rule-name">${esc(RULES.lens.name)}</span>
+        <p class="rule-desc">&ldquo;${esc(RULES.lens.desc)}&rdquo;</p>
+      </div>` : "";
+  const bar = RULES.bar ? `
+      <div class="rules-bar">
+        <span class="rule-name">${esc(RULES.bar.name)}</span>
+        <p class="rule-desc">&ldquo;${esc(RULES.bar.desc)}&rdquo;</p>
+      </div>` : "";
+  return `
+    <div class="rules-page">
+      <h2 class="rules-heading">${esc(RULES.heading)}</h2>
+      <p class="rules-sub">${esc(RULES.sub)}</p>
+      ${crit}
+      ${lens}
+      ${bar}
+    </div>`;
+}
+
+// Decide the ONE theme sketch for a leaf (deterministic — first present theme).
+function leafSketch(entries){
+  const themes = [];
+  entries.forEach(it => {
+    const t = sketchTheme(it.entry);
+    if(t && !themes.includes(t)) themes.push(t);
+  });
+  if(!themes.length) return null;
+  const theme = themes[0];
+  const s = SKETCH[theme];
+  if(!s) return null;
+  return {
+    theme,
+    html:`<div class="margin-sketch corner ${s.cls}"><img src="${s.src}" alt="" onerror="this.parentNode.style.display='none'"></div>`
+  };
+}
+
+// Render one entry leaf.
+//   side === "left"  -> NEVER carries a sketch (left leaf is sketch-free, always).
+//   side === "right" -> carries the spread's single sketch (passed in as `sketch`),
+//                       in its bottom-right corner. The winning theme may come from
+//                       a LEFT-leaf entry — the sketch still renders here, on the right.
+// When a sketch is present, reserve the bottom-right corner on the LAST entry so its
+// text wraps clear of the stamp, and mark the leaf .has-sketch (FIX 5 / v5.1 fix).
+function renderLeaf(leafEl, entries, side, sketch){
+  const inner = leafEl.querySelector(".leaf-inner");
+  inner.classList.remove("front-matter");
+  const sk = (side === "right") ? sketch : null;   // LEFT leaf gets NO sketch, ever.
+  const reserveIndex = sk ? entries.length - 1 : -1;
+  inner.classList.toggle("has-sketch", !!sk);
+  const entriesHTML = entries.map((it, i) => entryHTML(it, i === reserveIndex)).join("");
+  inner.innerHTML = entriesHTML + (sk ? sk.html : "");
+}
+
+// Render a front-matter leaf (no sketch, no entry chrome).
+function renderFront(leafEl, which){
+  const inner = leafEl.querySelector(".leaf-inner");
+  inner.classList.remove("has-sketch");
+  inner.classList.add("front-matter");
+  inner.innerHTML = (which === "title") ? titlePageHTML() : rulesPageHTML();
+}
+
+const stageEl  = document.getElementById("stage");
+const bookEl   = document.getElementById("book");
+const spreadEl = document.getElementById("spread");
+const leafLwrap = document.querySelector(".leaf.left");
+const leafRwrap = document.querySelector(".leaf.right");
+const leafL    = document.getElementById("leafL");
+const leafR    = document.getElementById("leafR");
+const counter  = document.getElementById("counter");
+const prevBtn  = document.getElementById("prev");
+const nextBtn  = document.getElementById("next");
+const coverBook = document.getElementById("coverBook");
+
+// FIX 1 — cover photo fallback: if assets/cover.png 404s, try .jpg; if that
+// also fails, swap to the CSS leather placeholder (same closed-book footprint).
+window.__coverFallback = function(img){
+  if(!img.dataset.triedJpg){
+    img.dataset.triedJpg = "1";
+    img.src = "assets/cover.jpg";
+    return;
+  }
+  coverBook.classList.add("no-photo");   // reveal the CSS placeholder
+};
+
+let SPREADS = [];
+let idx = 0;
+let mobileLeaf = 0;
+function isNarrow(){ return window.matchMedia("(max-width:820px)").matches; }
+function typeAt(i){ return (SPREADS[i] && SPREADS[i].type) || "cover"; }
+function isCover(){ return typeAt(idx) === "cover"; }
+function isFront(){ return typeAt(idx) === "front"; }
+function prefersReduced(){ return window.matchMedia("(prefers-reduced-motion:reduce)").matches; }
+
+function render(){
+  const sp = SPREADS[idx];
+
+  if(sp.type === "cover"){
+    stageEl.classList.remove("is-open");      // closed cover shown, spread hidden
+    counter.textContent = "cover";
+    // pre-render the FRONT MATTER behind the cover so it's there when it swings
+    const front = SPREADS[1];
+    if(front && front.type === "front"){
+      renderFront(leafLwrap, "title");
+      renderFront(leafRwrap, "rules");
+    }
+    spreadEl.removeAttribute("data-mobile-show");
+  }else{
+    stageEl.classList.add("is-open");          // cover swung away, spread visible
+    if(sp.type === "front"){
+      renderFront(leafLwrap, "title");
+      renderFront(leafRwrap, "rules");
+      counter.textContent = "title";           // FIX 2: front matter labelled, not numbered
+    }else{
+      const L = sp.L || [];
+      const R = sp.R || [];
+      // ONE sketch per spread, RIGHT leaf only. The winning theme is computed across
+      // BOTH leaves' entries (left-leaf themes count), but it is only ever drawn on the
+      // right leaf's bottom-right corner. The LEFT leaf never carries a sketch.
+      // Narrow screens show one leaf at a time: suppress the sketch on a left-leaf view.
+      const showingLeftOnly = isNarrow() && mobileLeaf === 0;
+      // On a narrow right-leaf view, only show the sketch if the right leaf has content
+      // (don't stamp a blank trailing page). Wide view always allows it on the right.
+      const rightViewable = !isNarrow() || (mobileLeaf === 1 && R.length > 0);
+      const spreadSketch = (showingLeftOnly || !rightViewable) ? null : leafSketch(L.concat(R));
+      renderLeaf(leafLwrap, L, "left",  null);
+      renderLeaf(leafRwrap, R, "right", spreadSketch);
+      // entries begin at opening 2; idx 1 = front. opening number = idx - 1.
+      const totalEntryOpenings = SPREADS.length - 2;
+      counter.textContent = "opening " + (idx - 1) + " / " + totalEntryOpenings;
+    }
+    if(isNarrow() && sp.type !== "front"){
+      spreadEl.setAttribute("data-mobile-show", mobileLeaf === 0 ? "left" : "right");
+    }else{
+      spreadEl.removeAttribute("data-mobile-show");
+    }
+  }
+
+  // single-scrap entry leaves flex to center (front matter already centers itself)
+  [leafL, leafR].forEach(leaf=>{
+    const entries = leaf.querySelectorAll(".entry");
+    if(entries.length === 1){ entries[0].classList.add("flex-grow"); }
+  });
+
+  prevBtn.disabled = (idx === 0) && !(isNarrow() && mobileLeaf === 1);
+  nextBtn.disabled = (idx === SPREADS.length - 1) &&
+                     !(isNarrow() && mobileLeaf === 0 && sp.type === "entries");
+  bindPins();
+}
+
+/* --- navigation ------------------------------------------------------------ */
+let animating = false;
+function turn(dir){
+  if(animating) return;
+
+  // OPENING the cover: cover (idx 0) -> front matter (idx 1) plays the swing.
+  if(isCover() && dir > 0){
+    if(SPREADS.length < 2) return;
+    openCover();
+    return;
+  }
+  // CLOSING back to the cover from the front matter (idx 1).
+  if(idx === 1 && dir < 0 && !isNarrow()){ closeCover(); return; }
+  if(idx === 1 && dir < 0 && isNarrow() && mobileLeaf === 0){ closeCover(); return; }
+
+  // narrow: step through leaves within a spread before changing spread.
+  // (front matter shows both leaves stacked-by-turn too: title then rules.)
+  if(isNarrow()){
+    const sp = SPREADS[idx];
+    if(sp.type !== "cover"){
+      const hasR = (sp.type === "front") ? true : (sp.R && sp.R.length);
+      if(dir > 0 && mobileLeaf === 0 && hasR){ mobileLeaf = 1; flip(dir); return; }
+      if(dir < 0 && mobileLeaf === 1){ mobileLeaf = 0; flip(dir); return; }
+    }
+    const target = idx + dir;
+    if(target < 1 || target > SPREADS.length - 1) return;
+    idx = target;
+    const tsp = SPREADS[idx];
+    const tHasR = (tsp.type === "front") ? true : (tsp.R && tsp.R.length);
+    mobileLeaf = dir > 0 ? 0 : (tHasR ? 1 : 0);
+    flip(dir);
+    return;
+  }
+
+  const target = idx + dir;
+  if(target < 1 || target > SPREADS.length - 1) return;
+  idx = target;
+  flip(dir);
+}
+
+// Swing the cover open and reveal the front matter (opening 1).
+function openCover(){
+  animating = true;
+  idx = 1;
+  render();                          // front matter is behind the cover; reveal it
+  stageEl.classList.add("is-open");
+  const dur = prefersReduced() ? 0 : 900;
+  setTimeout(()=>{ animating = false; render(); }, dur);
+}
+// Swing the cover closed.
+function closeCover(){
+  animating = true;
+  stageEl.classList.remove("is-open");
+  idx = 0;
+  counter.textContent = "cover";
+  prevBtn.disabled = true;
+  const dur = prefersReduced() ? 0 : 900;
+  setTimeout(()=>{ animating = false; render(); }, dur);
+}
+
+function flip(dir){
+  animating = true;
+  bookEl.classList.add(dir > 0 ? "turning-fwd" : "turning-back");
+  setTimeout(render, 300);
+  setTimeout(()=>{
+    bookEl.classList.remove("turning-fwd","turning-back");
+    animating = false;
+  }, 620);
+}
+
+/* --- pin / unpin ----------------------------------------------------------- */
+// pin .spread is the ENTRY-spread index (0-based), i.e. idx - 2.
+function currentSpotOf(slug){
+  const sp = SPREADS[idx];
+  if(sp.type !== "entries") return {spread:0, leaf:"L", slot:0};
+  const entrySpread = idx - 2;
+  const findIn = (arr, leaf)=>{
+    for(let i=0;i<arr.length;i++){ if(arr[i].entry.slug === slug) return {spread:entrySpread, leaf, slot:i}; }
+    return null;
+  };
+  return findIn(sp.L||[], "L") || findIn(sp.R||[], "R") || {spread:Math.max(0,entrySpread), leaf:"L", slot:0};
+}
+function togglePin(slug){
+  if(PINS[slug]){
+    delete PINS[slug];
+  }else{
+    PINS[slug] = currentSpotOf(slug);
+  }
+  savePins(PINS);
+  const wasCover = isCover();
+  const wasFront = isFront();
+  SPREADS = buildLayout();
+  if(idx > SPREADS.length - 1) idx = SPREADS.length - 1;
+  if(wasCover) idx = 0;
+  else if(wasFront) idx = 1;
+  render();
+}
+function bindPins(){
+  document.querySelectorAll(".pin").forEach(btn=>{
+    btn.onclick = (ev)=>{
+      ev.stopPropagation();
+      togglePin(btn.getAttribute("data-slug"));
+    };
+  });
+}
+
+/* --- controls -------------------------------------------------------------- */
+nextBtn.addEventListener("click", ()=>turn(1));
+prevBtn.addEventListener("click", ()=>turn(-1));
+
+// clicking the closed cover opens it
+coverBook.addEventListener("click", ()=>{ if(isCover()) turn(1); });
+coverBook.addEventListener("keydown",(e)=>{
+  if(e.key==="Enter" || e.key===" "){ e.preventDefault(); if(isCover()) turn(1); }
+});
+
+spreadEl.addEventListener("click",(e)=>{
+  if(isCover()) return;
+  if(e.target.closest(".pin")) return;
+  const r = spreadEl.getBoundingClientRect();
+  if(e.clientX - r.left > r.width/2) turn(1); else turn(-1);
+});
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="ArrowRight"){ e.preventDefault(); turn(1); }
+  if(e.key==="ArrowLeft"){ e.preventDefault(); turn(-1); }
+});
+
+// swipe — on the open spread
+let touchX = null;
+spreadEl.addEventListener("touchstart",(e)=>{ touchX = e.touches[0].clientX; },{passive:true});
+spreadEl.addEventListener("touchend",(e)=>{
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 40){ turn(dx < 0 ? 1 : -1); }
+  touchX = null;
+});
+// swipe left on the closed cover to open it
+coverBook.addEventListener("touchstart",(e)=>{ touchX = e.touches[0].clientX; },{passive:true});
+coverBook.addEventListener("touchend",(e)=>{
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(dx < -40 && isCover()) turn(1);
+  touchX = null;
+});
+
+document.getElementById("reshuffle").addEventListener("click", ()=>{
+  SPREADS = buildLayout();
+  idx = 0; mobileLeaf = 0;             // reshuffle returns to the closed cover
+  render();
+});
+
+let rT=null;
+window.addEventListener("resize", ()=>{ clearTimeout(rT); rT=setTimeout(render,150); });
+
+/* --- init: shuffle on open, start CLOSED on the cover ---------------------- */
+SPREADS = buildLayout();
+idx = 0;
+render();
+</script>
+</body>
+</html>

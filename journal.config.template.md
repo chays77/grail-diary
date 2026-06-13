@@ -21,6 +21,10 @@ framing_primer:
 ingest_sensitivity: generous | conservative   # from interview Q9. Per-journal.
                                                #   generous = lower threshold, wide net
                                                #   conservative = only clear matches
+seeds_enabled: true | false                    # from interview Q10. Per-journal.
+                                               #   true = seed response available at capture;
+                                               #   _seeds.md created in this journal folder.
+                                               #   false (default) = seed option not surfaced
 ---
 
 # [Journal Name] — Capture Criteria

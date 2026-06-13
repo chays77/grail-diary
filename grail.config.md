@@ -39,6 +39,7 @@ journal_types:
   - Memory       # moments, things said, texture — what happened that you want to keep
   - Reflective   # thesis/theme development — claims, counter-arguments, tensions, quotes
   - Gratitude    # what you're grateful for — relational, contemplative, brief
+  - Reference    # external sources — books, articles, essays, research; quotes and ideas worth keeping from things you read, watch, or listen to
 ```
 
 ---

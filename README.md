@@ -148,7 +148,7 @@ Also cohost of **Bullhorns & Bullseyes** — a podcast on marketing, brand, and 
 
 ## Acknowledgments
 
-- **Perry Daniels** — the Grail Method itself: one notebook, capture everything, no to-do lists, review constantly. This system is his practice with the clerical work automated and the thinking left alone.
+- **Perry Daniels** — the Grail Method itself: one notebook, capture everything, no to-do lists, review constantly. This system is his practice with the clerical work automated and the thinking left alone. [Watch him walk through it](https://youtu.be/_QVYfPnNOg4).
 - **Tom Nixon** — my podcast cohost and the source of the line that governs the build: *"Outsource the typing, not the thinking."*
 - **Jake Van Clief** — the Interpretable Context Methodology (ICM) that this folder architecture is built on. [Clief Notes](https://www.skool.com/cliefnotes/about)
 - **C.S. Lewis** — *The Abolition of Man* lives all through my own journal. The case for why the trained habit of judgment is worth defending.

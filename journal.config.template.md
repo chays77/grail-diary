@@ -11,7 +11,7 @@
 ---
 journal: [name]                          # human-readable, e.g. "My Book"
 slug: [kebab-case]                       # folder name: lowercase-with-hyphens, e.g. my-book
-type: Project | Memory | Reflective | Gratitude   # v1 set (grail.config.md), extensible
+type: Project | Memory | Reflective | Gratitude | Reference   # v1 set (grail.config.md), extensible
 created: YYYY-MM-DD
 journal_root: [resolved from grail.config.md — do NOT hardcode by hand]
 anchor: "[optional — a single line shown on the diary's title page]"

@@ -88,6 +88,8 @@ The criteria are the thinking, done once, deliberately. Everything after is the 
 
 **D — Migration.** "Drain the sticky notes into the book journal." The AI walks your old notes one at a time against a target journal's criteria — same Filter Line, pointed at your own archive. You say move / skip. No bulk moves, ever.
 
+**Seed** *(optional, enabled per journal during setup).* When a candidate clears your bar but isn't ready — you can feel it belongs but can't place it yet — say **seed** instead of keep or drop. It goes into a `_seeds.md` file for that journal, dated, raw, preserved. At your next synthesis pass the AI presents your open seeds one at a time: keep, drop, or seed again. Time is the lever. Seeds are never forced into the diary — being a seed is the point.
+
 Every confirmed entry carries the speaker's name and source, so a quote is always attributable. When a new candidate restates an idea already in the journal, the AI flags the possible duplicate by slug — never deciding for you — and you choose: new entry, stack the quote under the existing entry, or build a theme entry collecting several quotes around one named idea.
 
 ## The Rendered Diary
@@ -149,6 +151,7 @@ Also cohost of **Bullhorns & Bullseyes** — a podcast on marketing, brand, and 
 ## Acknowledgments
 
 - **Perry Daniels** — the Grail Method itself: one notebook, capture everything, no to-do lists, review constantly. This system is his practice with the clerical work automated and the thinking left alone. [Watch him walk through it](https://youtu.be/_QVYfPnNOg4).
+- **Mira Bradshaw** — the seed mechanic and the discipline behind it: append-only, raw always preserved, dated everything, time as the lever. Mira runs a parallel synthesis architecture on top of the Grail (inbox → manual pass → machine pass → narrative threads) and caught that seeds shouldn't be forced — being a seed is the point. The Reference journal type also came from her.
 - **Tom Nixon** — my podcast cohost and the source of the line that governs the build: *"Outsource the typing, not the thinking."*
 - **Jake Van Clief** — the Interpretable Context Methodology (ICM) that this folder architecture is built on. [Clief Notes](https://www.skool.com/cliefnotes/about)
 - **C.S. Lewis** — *The Abolition of Man* lives all through my own journal. The case for why the trained habit of judgment is worth defending.

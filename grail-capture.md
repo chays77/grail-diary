@@ -60,7 +60,7 @@ earlier note on…") · interpret, summarize, or reframe the trigger · rank bey
 — matched: [criterion-label]  ·  journal: [journal-name]  ·  source: [direct|proactive|ingest|migration]
 ```
 
-The owner responds **keep / refine / drop**. Nothing else is in the block.
+The owner responds **keep / refine / drop / seed** (seed only if `seeds_enabled: true` in this journal's config). Nothing else is in the block.
 
 ### The hard boundary (why this holds)
 
@@ -144,6 +144,10 @@ that matches a named criterion AND clears the bar. Recommend-everything is signa
    - **refine** → the owner edits the trigger/wording; write the refined version.
    - **drop** → discard. **No "passed" log** (a rejection log is itself mild atrophy-risk —
      it would let the agent's rejected guesses accumulate as a shadow opinion).
+   - **seed** *(only available if `seeds_enabled: true` in this journal's config)* → the
+     material clears the bar but isn't ready to synthesize yet. Append it to
+     `{journal_root}{slug}/_seeds.md` (see Seed Holding below). Time is the lever —
+     seeds are never forced. Revisited at the next synthesis pass.
 
 Proactive stays conversational because the human is present to answer in the moment. (This
 is the key difference from Ingest, which batches because no human is in the loop during
@@ -395,9 +399,12 @@ Wait for a response before presenting the next candidate. Valid responses:
   source recorded in the `## From ingest:` section header). Show ~3–5 sentences of
   surrounding context, then re-present the **same candidate** with the prompt again.
   Do NOT advance to the next candidate. The "context" response never counts as a decision.
+- **seed** *(only available if `seeds_enabled: true` in this journal's config)* → the
+  material clears the bar but isn't ready to synthesize yet. Remove the block from
+  `_candidates.md` and append it to `{journal_root}{slug}/_seeds.md` (see Seed Holding
+  below). Present next candidate.
 
-After the last candidate is resolved, confirm: "*[Journal] candidates drained — [N] kept,
-[N] dropped.*" Then update `_session.md` open candidate count to zero.
+After the last candidate is resolved, confirm: "*[Journal] candidates drained — [N] kept, [N] dropped, [N] seeded.*" Then update `_session.md` open candidate count to zero.
 
 When `_candidates.md` is empty, the file shows the header only. At the start of a session
 that touches a journal, the agent nudges: "*You have [N] candidates in [journal].*" (a
@@ -449,6 +456,44 @@ Write discipline: this file is append-or-update, never wholesale replace. Prior 
 
 ---
 
+## Seed Holding (`_seeds.md`)
+
+**Only active when `seeds_enabled: true` in the journal's `journal.config.md`.**
+
+Seeds are material that cleared the bar — matched a named criterion — but aren't ready to
+synthesize yet. The owner said **seed** instead of keep or drop. Time is the lever; a seed
+is not a failed entry, it is a held one. Seeds are never forced into the journal. They sit
+and are revisited at the next synthesis pass to see if they have grown.
+
+### `_seeds.md` format
+
+```markdown
+# [Journal Name] — Seeds
+
+> Material that cleared the bar but isn't ready yet. Revisit at next synthesis pass.
+> Append only — never edit or delete a seed without a keep/drop decision. Dated, raw, preserved.
+
+## [YYYY-MM-DD] · matched: [criterion-label] · source: [ingest|proactive|migration]
+
+> "[verbatim trigger — raw, unedited]"
+origin: [source file or "live-session"]
+```
+
+### Seed discipline
+
+- **Append only.** Seeds are added; they are never silently edited or removed.
+- **Raw is always preserved.** The verbatim trigger is never rewritten.
+- **Everything is dated.** The date of seeding is recorded, not the date of the source.
+- **The agent never promotes a seed.** Only the owner may pull a seed into `entries/` or
+  drop it. At the next synthesis pass, the agent presents open seeds one at a time:
+  `keep / drop / seed again` — the owner decides. "Seed again" holds it for another pass.
+
+### On-open nudge
+
+If `_seeds.md` is non-empty, the agent adds one line to the session-open report:
+"*You have [N] seeds in [journal] — revisit at next synthesis pass.*" (a nudge, not a
+block). It never presents the seeds unprompted beyond this.
+
 ## What This Phase Must NOT Do (summary of the boundary)
 
 - Must not interpret, summarize, or reframe any trigger when surfacing.
@@ -458,3 +503,5 @@ Write discipline: this file is append-or-update, never wholesale replace. Prior 
 - Must not keep a "passed" / "dropped" / "skipped" log of its rejected guesses.
 - Must not auto-promote, auto-truncate at the cap, or auto-retrofit the back-catalogue.
 - Must not write a to-do into the diary.
+- Must not promote a seed without an explicit owner decision.
+- Must not present seeds unprompted beyond the one-line on-open nudge.

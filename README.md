@@ -34,7 +34,8 @@ Here is the load-bearing mechanic. When the AI surfaces something it thinks belo
 — matched: [which of YOUR criteria it matched]
 ```
 
-That's the whole message. It may not say why it matters. It may not propose a connection. It may not summarize, reframe, or rank beyond the priority you set. **A candidate that can't name one of your criteria can't be surfaced at all** — so the AI has no channel for its own opinion of what's significant.
+(That's the short form — the full block in `grail-capture.md` also names the journal and
+the capture source.) That's the whole message. It may not say why it matters. It may not propose a connection. It may not summarize, reframe, or rank beyond the priority you set. **A candidate that can't name one of your criteria can't be surfaced at all** — so the AI has no channel for its own opinion of what's significant.
 
 You respond **keep / refine / drop**. You did the thinking once, deliberately, when you defined the criteria. The AI applies your filter; it never invents one.
 

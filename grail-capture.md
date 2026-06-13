@@ -43,7 +43,9 @@ When the agent surfaces a capture candidate (Entry Points B, C, and D), it may s
 
 1. **The verbatim trigger** — quoted exactly. The raw line the owner said, the raw line
    from the transcript, the raw scrap from the back-catalogue. No paraphrase, no cleanup
-   beyond removing transcription artifacts.
+   beyond removing transcription artifacts. (Leading discourse markers and filler —
+   "okay so," "um," "note to self" — may be trimmed; the words that remain are never
+   changed, reordered, or tidied.)
 2. **Which criterion matched** — the named criterion label from the target journal's
    `journal.config.md`.
 
@@ -98,7 +100,11 @@ this, don't file it."
   journal (it may *suggest* the most likely from the active session topic, but **never
   picks silently**).
 - They say "just jot this / don't file it" → bind to the **Daybook** (`grail.config.md` →
-  `daybook_slug`). This is the un-scoped catch-all; they don't have to decide.
+  `daybook_slug`). This is the un-scoped catch-all; they don't have to decide. **If the
+  Daybook doesn't exist yet, create it on the spot** — no interview needed: scaffold the
+  journal folder and seed a permissive `journal.config.md` (type Reflective; one
+  criterion: `catch-all — anything the owner chooses to jot`; no bar), tell the owner in
+  one line, and write the entry.
 - Only one journal exists → bind to it.
 
 **Process:**
@@ -156,21 +162,25 @@ queue the source; the agent may suggest one, never silently picks.
 filter up front — the agent applies it, never invents it.
 
 **Process (DIGEST-AT-END):**
-1. If another skill or workflow is also processing this source (a meeting-notes pass, a
+1. **If the source was pasted into chat (no file on disk), save it first** to
+   `{journal_root}{slug}/sources/YYYY-MM-DD-[slug].txt` and use that path as the origin.
+   This is what makes the drain pass's `context` command work after the chat scrolls
+   away. If the source is already a file, reference it where it lives — don't copy it.
+2. If another skill or workflow is also processing this source (a meeting-notes pass, a
    summary), let it run as normal. The Grail pass is **additive** — it never alters
    another deliverable.
-2. Read the tagged journal's `journal.config.md` criteria.
-3. **Read the full source first.** The agent reads the ENTIRE transcript or text before
+3. Read the tagged journal's `journal.config.md` criteria.
+4. **Read the full source first.** The agent reads the ENTIRE transcript or text before
    surfacing a single candidate. No early stopping, no surfacing in order of appearance.
-4. **Collect all matches across the full text**, then rank by how cleanly each one hits a
+5. **Collect all matches across the full text**, then rank by how cleanly each one hits a
    named criterion. Priority order: high-priority criteria first, then clearest signal
    within each criterion tier. The goal is the best candidates from the whole text, not
    the first candidates found.
-5. Surface up to `ingest_candidate_cap` (from `grail.config.md`) of the highest-ranked
+6. Surface up to `ingest_candidate_cap` (from `grail.config.md`) of the highest-ranked
    matches as a batched candidate list in `{journal_root}{slug}/_candidates.md` — every
    candidate as a Filter Line block (`source: ingest`, originating source recorded in
    the section header).
-6. **Nothing is auto-promoted.** The list waits in `_candidates.md` until the owner runs a
+7. **Nothing is auto-promoted.** The list waits in `_candidates.md` until the owner runs a
    single **keep/refine/drop pass** (below). Nothing is lost on session close — it
    persists in the file.
 
@@ -332,7 +342,9 @@ the human connects and decides how the journal holds the recurrence.
 
 **Speaker citation:** every confirmed entry carries the speaker's name + source (e.g.
 `— Name (org), Source`) so the quote is always attributable. On multi-citation and theme
-entries, each stacked quote carries its own speaker line.
+entries, each stacked quote carries its own speaker line. The owner's own direct jots
+need no citation line (the diary is theirs); quotes from anyone else — including the
+owner's words pulled from a transcript — always carry one.
 
 ---
 
@@ -395,13 +407,15 @@ nudge, not a block).
 
 ## Grail Rule 2 Routing (to-dos leave the notebook)
 
-The diary never holds a to-do. When Direct / Proactive / Migration content is
-action-shaped ("I need to…", "follow up with…", "build…", "email…"):
+The diary never holds a to-do. When content from ANY entry point is action-shaped
+("I need to…", "follow up with…", "build…", "email…") — including an ingest candidate
+that surfaces action-shaped during a drain pass:
 
 1. The agent does NOT write it to `entries/`.
 2. It says plainly: "*That's a to-do, not a diary entry — want it in your task list
    instead?*"
-3. On a yes, it routes to `grail.config.md` → `todo_target`.
+3. On a yes, it routes to `grail.config.md` → `todo_target` (creating that file with a
+   one-line header if it doesn't exist yet).
 4. On a no, it's dropped — it does not go in the diary either way.
 
 The diary holds the *thinking that might generate a to-do* (the idea, the belief, the

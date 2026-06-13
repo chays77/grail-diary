@@ -10,7 +10,7 @@
 -->
 ---
 journal: [name]                          # human-readable, e.g. "My Book"
-slug: [kebab-case]                       # folder name, e.g. my-book
+slug: [kebab-case]                       # folder name: lowercase-with-hyphens, e.g. my-book
 type: Project | Memory | Reflective | Gratitude   # v1 set (grail.config.md), extensible
 created: YYYY-MM-DD
 journal_root: [resolved from grail.config.md — do NOT hardcode by hand]
@@ -35,13 +35,22 @@ ingest_sensitivity: generous | conservative   # from interview Q9. Per-journal.
 
 - **[criterion-label-1]** — [verbatim / near-verbatim description from Q5]
   - priority: high | normal          # from Q7 — the ONLY ordering the agent may apply
-  - shape: quote | claim | question | moment | source | sketch   # from Q3
+  - shape: quote | claim | question | moment | source | sketch   # from Q3 — or the
+                                     #   owner's own words if none of these fit
 - **[criterion-label-2]** — [...]
   - priority: high | normal
   - shape: [...]
 - **[criterion-label-3]** — [...]
   - priority: high | normal
   - shape: [...]
+
+## Priority
+
+<!-- OPTIONAL — from Q7, in the owner's words: the thing they'd hate most to miss.
+     Delete this section if the owner named no priority. The rendered diary prints
+     it on the rules page. -->
+
+[Verbatim from Q7 — e.g. "The fixes. That's the stuff I lose."]
 
 ## The Bar (when to flag vs. let pass)
 
@@ -57,3 +66,12 @@ has no basis to let anything pass, and proactive/ingest surfacing has no floor.]
 [From Q4 — whose words count: yours / a colleague's / a guest's / a book or source /
 a person you love. Establishes whether ingest sources and personal/relational voices
 count for this journal.]
+
+## Interview notes
+
+<!-- OPTIONAL — the keep-test (Q1) and lose-test (Q2) answers, verbatim. NOT operative
+     criteria — the agent never surfaces against this section. Kept so the owner's most
+     concrete filter language isn't lost. Delete if the owner prefers. -->
+
+- Keep test: "[Q1, verbatim]"
+- Lose test: "[Q2, verbatim]"

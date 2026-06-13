@@ -73,6 +73,8 @@ A Journal =
 ├── entries/              ← Phase 1 output. One confirmed entry per file: YYYY-MM-DD-slug.md
 ├── _candidates.md        ← Phase 1 staging. Surfaced-but-unconfirmed. Drained at review.
 ├── _session.md           ← Session state: last ingest, open candidates, priors, threads.
+├── sources/              ← Pasted ingest sources, saved so the drain pass's "context"
+│                            command works after the chat scrolls away. (Created on demand.)
 └── diary/                ← Rendered HTML diary (build-diary.js). Open via file://.
     ├── index.html
     └── assets/           ← optional cover photo + hand-drawn theme sketches

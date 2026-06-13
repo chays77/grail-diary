@@ -42,6 +42,18 @@ later.
 
 ---
 
+## Step 0 — Before the First Question (two quick checks)
+
+1. **Confirm the journal's name and folder.** Derive a name and kebab-case slug
+   (lowercase-with-hyphens) from what the owner said, and confirm both before starting:
+   "*Calling it '[Name]' — folder `[slug]`. Good?*" Everything keys off the slug, so it
+   is confirmed, never assumed.
+2. **Check `owner:` in `grail.config.md`.** If it's blank, ask once: "*One setup thing —
+   what name should appear on your diaries' title pages? (Optional — say skip.)*" Write
+   the answer to `grail.config.md` → `owner:`. Never ask again on later setups.
+
+---
+
 ## Step 1 — Framing Primer (runs first, ~1 minute)
 
 Two questions, a sentence each. Purpose is to surface where the owner *thinks* the
@@ -176,6 +188,9 @@ block is the operative artifact — Phase 1 reads it on every capture.
 | **The Bar** | Q6, verbatim |
 | **Does NOT belong** | Q8 |
 | **Voices that trigger capture** | Q4 |
+| **Interview notes** (optional section) | Q1 + Q2, verbatim — the keep-test and lose-test answers. Not operative criteria; kept so the owner's most concrete filter language isn't lost. |
+| **`## Priority` section** (optional) | Q7 — if the owner names something they'd hate most to miss, write it as a short `## Priority` section in their words (in addition to marking that criterion `priority: high`). The diary renders this section on its rules page. |
+| `anchor` (frontmatter, optional) | asked once at extraction: "*Want a single line printed on the diary's title page — a motto, a question, a verse? Optional.*" |
 
 ### Self-check before writing (validation criteria)
 

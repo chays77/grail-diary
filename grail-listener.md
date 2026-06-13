@@ -86,6 +86,7 @@ Types (v1 set from `grail.config.md`, extensible):
 | **Memory** | Moments, things said, texture. | A line someone said, a scene, what the room felt like, a small true thing. **Commonplace-book grain — personal, relational.** |
 | **Reflective** | A thesis or theme being developed. | Claims, counter-arguments, surfacing beliefs, a quote that sharpens the idea, a tension you're sitting with. **Contemplative grain.** |
 | **Gratitude** | What you're grateful for. | A moment you don't want to take for granted, a person, a small mercy. **Brief, relational, contemplative grain.** |
+| **Reference** | External sources being read or studied. | A quote from a book, a key claim from an article, a line that sharpens an idea. **Source-first grain — attribution always required.** |
 
 **TONE SIGNAL:** Memory / Reflective / Gratitude lean toward a *personal commonplace
 book*, NOT a product spec-log. When the owner goes abstract on those types, the examples
@@ -139,6 +140,11 @@ examples. Match the grain to the type.
    aggressive should I be — flag generously and let you cut, or only flag the clear ones?
    *(Sets `ingest_sensitivity` — see capture §"Entry Point C." Per-journal.)*
 
+10. **Seeds.** Do you want to enable seeds for this journal? A seed is material that clears
+    your bar but isn't ready yet — you hold it, untouched, and come back to it at your
+    next synthesis pass to see if it has grown. Time is the lever; seeds are never forced.
+    *(Sets `seeds_enabled` in the journal config. Can be enabled later.)*
+
 ### Type-aware example prompts (Step 2 controls which grain to use)
 
 When the owner answers Q1, Q3, or Q5 abstractly and you spend your one follow-up, reach
@@ -152,6 +158,8 @@ for examples in the **grain of the journal's type**:
   you keep circling back to?"
 - **Gratitude** → "Like a small thing that went right today? A person you were glad for? A
   moment you don't want to take for granted?"
+
+- **Reference** → "Like a quote that stopped you? A claim you want to hold onto? A line from a chapter you're working through?"
 
 Offer ONE example cluster, then wait. Never list all four grains — pick the one matching
 the declared type.
@@ -184,6 +192,7 @@ block is the operative artifact — Phase 1 reads it on every capture.
 | `journal_root` | resolved from `grail.config.md` |
 | `framing_primer.purpose` / `.hope_to_keep` | Framing Primer Q1 / Q2 |
 | `ingest_sensitivity` | Q9 |
+| `seeds_enabled` | Q10 — `true` if yes, `false` if no or skipped |
 | **Criteria** (label + description + priority + shape) | Q5 (descriptions, VERBATIM) · Q7 (priority) · Q3 (shape) |
 | **The Bar** | Q6, verbatim |
 | **Does NOT belong** | Q8 |
@@ -213,7 +222,10 @@ After the self-check passes, write these files and confirm:
 1. `{journal_root}{slug}/journal.config.md` — the criteria config.
 2. `{journal_root}{slug}/entries/` — create the folder (empty).
 3. `{journal_root}{slug}/_candidates.md` — empty file with header only.
-4. `{journal_root}{slug}/_session.md` — seed with the structure below, populated from
+4. `{journal_root}{slug}/_seeds.md` — create only if `seeds_enabled: true`. Empty file
+   with header: `# [Journal Name] — Seeds` + the single blockquote line from the format
+   spec in `grail-capture.md` §"Seed Holding". If `seeds_enabled: false`, skip.
+5. `{journal_root}{slug}/_session.md` — seed with the structure below, populated from
    this session:
 
 ```markdown
